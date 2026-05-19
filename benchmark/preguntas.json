@@ -1,53 +1,62 @@
 [
   {
-    "id": "q1",
-    "categoria": "asignaturas",
-    "pregunta": "¿Hay alguna asignatura sobre desarrollo de videojuegos en GTI?",
-    "fuentes_esperadas": ["3_tercero.txt", "4_cuarto.txt"]
+    "id": "q01",
+    "pregunta": "¿Qué es DNI?",
+    "ambito": "factual"
   },
   {
-    "id": "q2",
-    "categoria": "asignaturas",
-    "pregunta": "¿En qué consiste la asignatura de Diseño de Interfaces y Experiencia de Usuario?",
-    "fuentes_esperadas": ["3_tercero.txt"]
+    "id": "q02",
+    "pregunta": "¿A qué hora son los desayunos solidarios?",
+    "ambito": "factual_contradiccion"
   },
   {
-    "id": "q3",
-    "categoria": "asignaturas",
-    "pregunta": "¿Qué se da en la asignatura de Tratamiento Digital de Imagen?",
-    "fuentes_esperadas": ["3_tercero.txt"]
+    "id": "q03",
+    "pregunta": "¿Cómo me apunto a los desayunos solidarios?",
+    "ambito": "logistica"
   },
   {
-    "id": "q4",
-    "categoria": "primer_curso",
-    "pregunta": "¿Qué asignaturas de primero introducen a la programación?",
-    "fuentes_esperadas": ["1_primero.txt"]
+    "id": "q04",
+    "pregunta": "¿En qué se diferencian RESIS y COLES?",
+    "ambito": "sintesis_multidoc"
   },
   {
-    "id": "q5",
-    "categoria": "consejo",
-    "pregunta": "Mi hijo quiere ser diseñador de videojuegos, ¿le sirve este grado?",
-    "fuentes_esperadas": ["3_tercero.txt", "4_cuarto.txt"]
+    "id": "q05",
+    "pregunta": "¿Cuántos voluntarios tiene DNI?",
+    "ambito": "factual"
   },
   {
-    "id": "q6",
-    "categoria": "trampa_retrieval",
-    "pregunta": "¿Qué se da en la asignatura de Inteligencia Artificial?",
-    "fuentes_esperadas": ["3_tercero.txt"],
-    "nota": "Caso conocido: el retrieval semántico se distrae con 'Visión Artificial'. Documentado en el Colab §10."
+    "id": "q06",
+    "pregunta": "¿Dónde es el punto de encuentro para los desayunos?",
+    "ambito": "logistica"
   },
   {
-    "id": "q7",
-    "categoria": "fuera_de_ambito",
-    "pregunta": "¿Hay alguna asignatura sobre cocina creativa?",
-    "fuentes_esperadas": [],
-    "respuesta_esperada": "No tengo esa información en mis fuentes"
+    "id": "q07",
+    "pregunta": "¿Qué proyectos tiene DNI?",
+    "ambito": "sintesis_multidoc"
   },
   {
-    "id": "q8",
-    "categoria": "fuera_de_ambito",
+    "id": "q08",
     "pregunta": "¿Cuánto cuesta el alquiler en Valencia?",
-    "fuentes_esperadas": [],
-    "respuesta_esperada": "No tengo esa información en mis fuentes"
+    "ambito": "fuera_ambito"
+  },
+  {
+    "id": "q09",
+    "pregunta": "¿Cómo contacto con la asociación DNI?",
+    "ambito": "logistica"
+  },
+  {
+    "id": "q10",
+    "pregunta": "¿Qué es el refuerzo escolar de DNI?",
+    "ambito": "factual"
+  },
+  {
+    "id": "q11",
+    "pregunta": "¿Puedo apuntarme a DNI si soy menor de edad?",
+    "ambito": "factual"
+  },
+  {
+    "id": "q12",
+    "pregunta": "¿Cuándo se fundó DNI?",
+    "ambito": "factual"
   }
 ]
