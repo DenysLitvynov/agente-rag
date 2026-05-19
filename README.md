@@ -1,125 +1,113 @@
-# Agente RAG — repo-ejemplo (caso GTI Orienta)
+# Agente RAG — Asistente DNI Valencia
 
-> Repo de **referencia** para la práctica del Asistente DNI de la asignatura
-> *Inteligencia Artificial* (3º GTI, UPV). **Léelo como ejemplo de cómo
-> entregar**, no como plantilla a forkear: el caso (GTI Orienta) es distinto
-> al que vais a entregar (DNI Valencia).
+Agente de Retrieval-Augmented Generation que responde preguntas sobre la asociación **DNI (Damos Nuestra Ilusión)** Valencia usando exclusivamente la información de los 16 documentos oficiales proporcionados.
 
-## ¿Por qué este repo es un ejemplo y no la solución?
+## Requisitos
 
-| Eje | Práctica oficial | Este repo |
-|---|---|---|
-| Caso | Asociación DNI Valencia | Orientación académica GTI |
-| Corpus | 16 `.txt` (se os entrega) | 4 `.txt` (uno por curso del grado GTI) |
-| Banda | Vosotros decidís hasta dónde llegáis | 5 + 6 + 7 implementadas, hexagonal **NO** |
+- Python 3.10+
+- [Ollama](https://ollama.com/download) instalado y en ejecución
+- Modelos Ollama descargados (ver instalación)
+- Acceso a VPN UPV + API key de PoliGPT (solo para benchmark con modelos PoliGPT)
 
-El **patrón** (chunking, embeddings, retrieval, prompt anti-alucinación,
-cita de fuentes, métricas) es el mismo. El **dominio** es distinto. Eso
-permite que copiéis la **estructura** sin copiar la **solución**.
-
-## Arranque en menos de 5 minutos
+## Instalación
 
 ```bash
-# 1. Clonar y entrar
-git clone <este-repo>
-cd agente-rag-gti
+git clone <url-del-repo>
+cd agente-rag
 
-# 2. Instalar (Python 3.11+)
-python -m venv .venv && source .venv/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate   # Linux/macOS
+# .venv\Scripts\activate    # Windows
+
 pip install -r requirements.txt
-
-# 3. Tener Ollama corriendo y los dos modelos disponibles
-#    (en local. Para probar contra UPV ver .env.example)
-ollama pull gemma2:27b
-ollama pull nomic-embed-text
-
-# 4. Construir el índice (~ 30-90 s)
-python scripts/build_index.py
-
-# 5. Lanzar una consulta
-python consultar.py "¿Hay una asignatura sobre videojuegos en GTI?"
 ```
 
-Salida (resumida):
-
-```json
-{
-  "respuesta": "Sí. En 4º se imparte 'Desarrollo de Videojuegos' (4_cuarto.txt)...",
-  "fuentes": ["4_cuarto.txt", "3_tercero.txt"],
-  "chunks": [...],
-  "metricas": {"prompt_tokens": 612, "output_tokens": 45, "tokens_per_sec": 38.2, "latencia_s": 1.7, "modelo": "gemma2:27b"}
-}
-```
-
-## Estructura del repositorio
-
-```
-agente-rag-gti/
-├── consultar.py          # CONTRATO §9 opción A (módulo Python)
-├── api.py                # CONTRATO §9 opción B (POST /query con FastAPI)
-├── features.json         # Declaración para el corrector — SIN ESTO LA NOTA ES 0
-├── GRUPO.md              # Plantilla equipo
-├── AI_USAGE.md           # Plantilla declaración de uso de IA
-├── corpus/               # 4 .txt (1º a 4º curso de GTI)
-├── src/agente_rag/       # Pipeline RAG modular (chunker, retriever, generator, ...)
-├── scripts/
-│   ├── build_index.py    # Construye índice ChromaDB persistente
-│   └── run_eval.py       # Ejecuta el benchmark
-├── tests/                # pytest sin dependencia de red (mocks de Ollama)
-├── benchmark/
-│   ├── preguntas.json    # 8 preguntas tipo (incluye 2 fuera-de-ámbito)
-│   └── README.md         # Cómo evaluar resultados
-├── docs/
-│   ├── ARCHITECTURE.md   # Decisiones de diseño y por qué
-│   └── CONTRACT.md       # Contrato de interfaz al detalle
-└── .github/workflows/ci.yml   # Tests + lint en cada push
-```
-
-## Bandas implementadas
-
-- **Banda 5** ✓ — pipeline RAG con prompt anti-alucinación.
-- **Banda 6** ✓ — cada respuesta cita el archivo fuente.
-- **Banda 7** parcial — el contrato emite `chunks` y `metricas` (tokens,
-  tokens/s, latencia). **Falta** el benchmark con 4 modelos: lo dejamos a
-  los alumnos para que midan tradeoffs reales.
-- **Banda 8** — no implementada. Sería integrar RAGAs sobre los outputs
-  de `scripts/run_eval.py`.
-- **Banda 10** — *deliberadamente no implementada*. El reto del 10 es
-  refactorizar este single-agent a hexagonal (ver `manual_desarrollador_dni.pdf`
-  sección 4). Si os lo damos hecho, regalamos la nota máxima.
-
-## Tests
+Copia `.env.example` a `.env` y rellena los valores:
 
 ```bash
-pytest -q
+cp .env.example .env
 ```
 
-Los tests **no llaman a Ollama**: parchean `retrieve` y `generate` con stubs
-para verificar que el contrato (`{respuesta, fuentes, chunks, metricas, trazas}`)
-se respeta y que el `features.json` declara coherentemente lo que entrega.
+Descarga los modelos necesarios con Ollama:
 
-## Por qué este repo está bien estructurado (lo que queremos que copiéis)
+```bash
+ollama pull nomic-embed-text
+ollama pull qwen2.5:3b
+ollama pull llama3.2:3b
+```
 
-1. **Separación clara `src/` ↔ `consultar.py`/`api.py`**. La lógica vive en
-   el paquete, los puntos de entrada son finos. Si mañana queremos meter
-   un Streamlit (extra +1.5), es otro fichero más, no un refactor.
-2. **`features.json` válido y honesto**. Marca `true` solo lo que
-   funciona. Los alumnos que declaren `banda7=true` sin `benchmark/` se
-   detectan en el corrector.
-3. **Tests aislados de red**. CI corre en GitHub Actions sin Ollama.
-4. **Conventional commits granulares**. Mira `git log --oneline`: cada
-   commit toca una capa, no hay un commit-monstruo "lo subo todo".
-5. **Cita de fuentes literal en el prompt** (`prompts.py`). La banda 6 se
-   gana en el prompt, no en el postproceso.
+## Construcción del índice
 
-## Avisos legales y éticos
+Ejecutar una única vez (o cuando cambie el corpus):
 
-- Modelo y corpus son material docente. No lo redistribuyáis fuera del aula
-  sin autorización del profesor.
-- Si añadís `boto3`/AWS Rekognition, **rotad credenciales** después.
-  Ningún `.env` con secretos debe llegar a un repo público.
+```bash
+python scripts/build_index.py
+```
 
-## Créditos
+Esto lee los 16 `.txt` de `corpus/`, los trocea, genera embeddings con `nomic-embed-text` y los indexa en ChromaDB en `data/chroma/`.
 
-Vicente Rivas Monferrer & Juan M. Alberola — Universitat Politècnica de
-València, 2026.
+## Uso
+
+```bash
+python consultar.py "¿Qué es DNI?"
+```
+
+O desde Python:
+
+```python
+from consultar import consultar
+
+resultado = consultar("¿Cómo me apunto a los desayunos solidarios?")
+print(resultado["respuesta"])
+print(resultado["fuentes"])
+```
+
+El diccionario devuelto contiene: `respuesta`, `fuentes`, `chunks`, `metricas`, `trazas`.
+
+## Benchmark
+
+```bash
+python benchmark/benchmark.py
+```
+
+Ejecuta 12 preguntas contra 4 modelos (2 locales + 2 PoliGPT). Requiere VPN UPV activa para los modelos PoliGPT. Genera `benchmark/benchmark.json` y debe completarse con `benchmark/benchmark.md`.
+
+## Estructura del proyecto
+
+```
+agente-rag/
+├── consultar.py              # Punto de entrada del contrato (opción A)
+├── corpus/                   # 16 documentos .txt de DNI (no modificar)
+├── src/agente_rag/
+│   ├── pipeline.py           # Orquestador: retrieve → prompt → generate
+│   ├── chunker.py            # Troceo con tratamiento especial Q/A
+│   ├── embedder.py           # Cliente embeddings Ollama
+│   ├── retriever.py          # ChromaDB: indexación y búsqueda semántica
+│   ├── generator.py          # Cliente LLM (Ollama / PoliGPT)
+│   ├── prompts.py            # Prompt anti-alucinación
+│   └── config.py             # Configuración desde .env
+├── scripts/
+│   └── build_index.py        # Construcción del índice vectorial
+├── benchmark/
+│   ├── preguntas.json        # Set fijo de 12 preguntas
+│   ├── benchmark.py          # Script del benchmark
+│   ├── benchmark.json        # Resultados crudos
+│   └── benchmark.md          # Tabla legible + interpretación
+├── features.json             # Declaración de bandas implementadas
+├── .env.example              # Plantilla de variables de entorno
+├── GRUPO.md                  # Integrantes y roles
+└── AI_USAGE.md               # Uso honesto de herramientas IA
+```
+
+## Variables de entorno (.env)
+
+| Variable | Descripción | Valor por defecto |
+|----------|-------------|-------------------|
+| `OLLAMA_URL` | URL del servidor Ollama | `http://localhost:11434/api` |
+| `LLM_MODEL` | Modelo LLM para generación | `qwen2.5:3b` |
+| `EMBED_MODEL` | Modelo de embeddings | `nomic-embed-text` |
+| `COLLECTION_NAME` | Nombre colección ChromaDB | `dni` |
+| `CORPUS_DIR` | Directorio del corpus | `corpus` |
+| `CHROMA_PATH` | Directorio de ChromaDB | `data/chroma` |
+| `POLIGPT_API_KEY` | API key de PoliGPT (UPV) | — |
+| `POLIGPT_BASE_URL` | URL base de PoliGPT | `https://api.poligpt.upv.es/v1` |

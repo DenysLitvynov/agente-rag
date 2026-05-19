@@ -1,13 +1,13 @@
 {
-  "_": "Plantilla declarativa que el corrector lee primero. Marca true SOLO lo implementado de verdad. Declarar true sin implementar es trampa y penaliza (ver enunciado §9). Este repo-ejemplo declara las bandas que sí implementa: 5, 6 y 7.",
-  "interfaz": "modulo_python",
+  "_": "Marca true las capacidades que tu equipo IMPLEMENTA realmente. Declarar algo en true sin tenerlo es trampa y penaliza.",
+  "interfaz": "opcion_a",
   "modulo": "consultar.py",
   "endpoint_http": null,
   "arquitectura": "single_agent",
   "bandas_declaradas": {
     "banda5_pipeline_no_inventa": true,
     "banda6_cita_archivo": true,
-    "banda7_benchmark_4_modelos": false,
+    "banda7_benchmark_4_modelos": true,
     "banda8_ragas_metricas_propias": false,
     "banda10_hexagonal": false
   },
@@ -16,7 +16,12 @@
     "aws_rekognition": false,
     "huggingface": false
   },
-  "modelos_evaluados_en_benchmark": [],
+  "modelos_evaluados_en_benchmark": [
+    {"alias": "qwen2.5:3b",   "servidor": "ollama_local"},
+    {"alias": "llama3.2:3b",  "servidor": "ollama_local"},
+    {"alias": "gemma3:27b",   "servidor": "poligpt"},
+    {"alias": "llama3.3:70b", "servidor": "poligpt"}
+  ],
   "ollama_local_obligatorio": true,
   "verify_ssl_upv": false
 }

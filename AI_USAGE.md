@@ -1,36 +1,22 @@
-# AI_USAGE.md — uso honesto de asistentes de IA
+# Uso de herramientas de Inteligencia Artificial
 
-> Plantilla obligatoria. Rellenadla con la verdad. **No penaliza usar IA**;
-> penaliza mentir sobre el uso (ver enunciado §6 y rúbrica).
+## Claude (claude.ai)
 
-## ¿Qué herramientas habéis usado?
+**Tareas realizadas:**
+- Diagnóstico del problema de configuración del entorno (colección ChromaDB incorrecta, .env no propagado en tiempo de import)
+- Diseño e implementación del preprocesado Q/A en `src/agente_rag/chunker.py`
+- Redacción y ajuste iterativo del prompt anti-alucinación en `src/agente_rag/prompts.py`
+- Actualización del endpoint de embeddings en `src/agente_rag/embedder.py` (migración de `/api/embeddings` a `/api/embed` por cambio de versión en Ollama 0.24)
+- Corrección de la carga del `.env` en `scripts/build_index.py` y `benchmark/benchmark.py`
+- Implementación del script `benchmark/benchmark.py` con soporte para Ollama local y PoliGPT
 
-- [ ] ChatGPT (GPT-4 / GPT-5 / o3 / ...)
-- [ ] Claude (Sonnet / Opus / ...)
-- [ ] GitHub Copilot
-- [ ] Cursor / Windsurf / IDE con asistente integrado
-- [ ] Gemini
-- [ ] Ollama local con modelos abiertos
-- [ ] Otras: ...
+**Ficheros modificados con asistencia de IA:**
+- `src/agente_rag/chunker.py` — lógica de detección y agrupación de pares Q/A
+- `src/agente_rag/prompts.py` — prompt anti-alucinación con reglas estrictas
+- `src/agente_rag/embedder.py` — actualización de endpoint Ollama
+- `scripts/build_index.py` — carga manual del .env antes de imports
+- `benchmark/benchmark.py` — script completo de benchmark
 
-## ¿En qué partes os ha ayudado?
+**Revisión posterior:** Todo el código generado fue ejecutado, depurado y verificado manualmente en el entorno real antes de incluirse en el repositorio. Los errores detectados durante la ejecución (endpoints incorrectos, colección no encontrada, modelos no descargados) fueron diagnosticados y corregidos de forma iterativa.
 
-Sed específicos. Ejemplos de declaración honesta:
-
-- **Boilerplate y refactors**: la estructura de `src/agente_rag/` y los
-  type hints los redactó Claude a partir de un primer borrador nuestro.
-- **Debugging**: cuando ChromaDB daba un error de embeddings con dimensión
-  inconsistente, ChatGPT nos guio al fix.
-- **Docs**: este `AI_USAGE.md` lo redactó Copilot a partir de la plantilla
-  del repo-ejemplo. Lo revisamos línea a línea.
-- **Tests**: los `test_*.py` los escribimos a mano, sin asistente.
-- **NO usado para**: el informe de la práctica (lo redactamos íntegramente
-  nosotros), las decisiones arquitecturales, ni el análisis del benchmark.
-
-## Compromiso
-
-Hemos leído y entendido todo el código que hemos entregado. En la presentación
-oral en directo seremos capaces de defender cualquier línea que el profesor
-nos señale. Si no podemos defender una decisión, asumimos que la nota baja.
-
-Firma (digital, escribiendo el nombre): __________________________
+**Partes del código sin revisión posterior:** Ninguna.
