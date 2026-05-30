@@ -132,3 +132,48 @@ Los resultados se guardan en:
 evaluacion/ragas_results.json
 
 ```
+## Frontend (extra) — Streamlit
+
+Interfaz web ligera que **consume el contrato del agente**: importa la función
+`consultar()` de `consultar.py` (opción A) y se limita a presentar el resultado,
+sin reimplementar nada del dominio. Por cada pregunta muestra la respuesta, las
+**fuentes citadas** (banda 6), los **chunks recuperados con su score** (banda 7)
+y las **métricas** de generación (latencia, tokens/s, modelo).
+
+### Requisitos
+
+- Dependencias del proyecto instaladas (`pip install -r requirements.txt`);
+  `streamlit` ya está incluido.
+- Ollama en marcha y el índice construido (`python scripts/build_index.py`),
+  exactamente igual que para usar `consultar.py`.
+
+### Cómo lanzarlo
+
+Desde la **raíz del repositorio**:
+
+```bash
+streamlit run frontend/app.py
+```
+
+Se abre solo en el navegador (`http://localhost:8501`). La primera respuesta
+tarda más porque el modelo se carga en memoria; en CPU la generación va a la
+velocidad esperable de un modelo local.
+
+### Qué incluye
+
+- Chat con historial de la sesión y preguntas de ejemplo (incluida una fuera de
+  ámbito, para ver que el agente la rechaza).
+- Respuesta + fuentes citadas + desplegable con los chunks recuperados y sus
+  scores + métricas de generación.
+- Barra lateral con la configuración activa (modelo LLM, embeddings, colección).
+- Tema visual definido en `.streamlit/config.toml`.
+
+### Estructura
+
+```
+frontend/
+└── app.py          # UI Streamlit (importa consultar())
+.streamlit/
+└── config.toml     # tema visual (colores y tipografía)
+```
+
