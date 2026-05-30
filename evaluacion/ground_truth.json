@@ -1,0 +1,22 @@
+[
+    {
+        "question": "¿Dónde es el punto de encuentro para desayunos?",
+        "ground_truth": "El punto de encuentro es la Porta de la Mar de Valencia."
+    },
+    {
+        "question": "¿Qué días es el refuerzo escolar?",
+        "ground_truth": "El refuerzo escolar es de lunes a viernes de 15:30 a 16:30."
+    },
+    {
+        "question": "¿Dónde está la residencia La Acollida?",
+        "ground_truth": "La residencia La Acollida está en la calle Crevillente 22 de Valencia."
+    },
+    {
+        "question": "¿Cómo puedo unirme a DNI?",
+        "ground_truth": "Puedes contactar por WhatsApp y te añadirán a los grupos."
+    },
+    {
+        "question": "¿Qué significa PARA. MIRA. AYUDA?",
+        "ground_truth": "Es la filosofía principal de DNI basada en empatía y acción social."
+    }
+]

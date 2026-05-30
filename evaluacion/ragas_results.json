@@ -1,0 +1,117 @@
+{
+  "ragas": {
+    "question": {
+      "0": "¿Dónde es el punto de encuentro para desayunos?",
+      "1": "¿Qué días es el refuerzo escolar?",
+      "2": "¿Dónde está la residencia La Acollida?",
+      "3": "¿Cómo puedo unirme a DNI?",
+      "4": "¿Qué significa PARA. MIRA. AYUDA?"
+    },
+    "answer": {
+      "0": "El punto de encuentro siempre es la Porta de la Mar de Valencia. Desde ahí repartimos los alimentos por las zonas de Mestalla, el centro, El Carmen o el río entre otros.",
+      "1": "Lunes, martes, miércoles, jueves y viernes de 15:30 a 16:30.",
+      "2": "En la residencia La Acollida, muy cerca de Blasco Ibáñez en la calle Crevillente 22.",
+      "3": "Qwen, según [09_como_participar.txt]: ¡Es muy fácil! Simplemente contacta con nosotros por WhatsApp al 962 025 978 o al 647 440 275 y te añadiremos a nuestros grupos de coordinación. No hay formularios complicados ni burocracia. También puedes seguirnos en Instagram @dnivalenciaa donde publicamos todas las actividades. Te unes, te presentas en la primera actividad que te interese, ¡y ya eres parte de DNI!",
+      "4": "No tengo esa información en mis fuentes."
+    },
+    "contexts": {
+      "0": [
+        "Q: ¿Dónde es el punto de encuentro para desayunos?\nA: El punto de encuentro siempre es la Porta de la Mar de Valencia. Desde ahí repartimos los alimentos por las zonas de Mestalla, el centro, El Carmen o el río entre otros.",
+        "Q: ¿Dónde es el punto de encuentro?\nA: El punto de encuentro siempre es la Porta de la Mar de Valencia desde ahí repartimos los alimentos por las zonas de Mestalla, el centro, El Carmen o el río entre otros.",
+        "Q: ¿Hay transporte para ir al punto de encuentro?\nA: Cada voluntario llega por su cuenta. El punto, Puerta de la Mar, está bien comunicado con bus y metro.",
+        "Q: ¿Qué pasa si llego tarde al punto de encuentro?\nA: Intentamos esperarte unos minutos, pero si ya hemos salido puedes escribir por WhatsApp y te diremos dónde alcanzarnos.",
+        "Q: ¿Dónde quedamos?\nA: El punto de encuentro siempre es en Puerta de la Mar, y desde allí recorremos juntos diferentes zonas de Valencia."
+      ],
+      "1": [
+        "Q: ¿Dónde es el refuerzo escolar?\nA: Es el CEIP Antonio Ferrandis de la Coma Valencia.",
+        "Q: ¿Dónde es el refuerzo escolar?\nA: Es en el CEIP Antonio Ferrandis de la Coma, Valencia.",
+        "Q: ¿Dónde es el refuerzo escolar (COLES)?\nA: El refuerzo escolar (COLES) se realiza en una biblioteca tutorizada en Valencia. La ubicación exacta y los horarios (generalmente tardes entre semana) te los facilitamos cuando te apuntas al proyecto, ya que requiere un compromiso más regular y queremos que sea accesible para tu zona. Si te interesa, contacta al 647 440 275 y te damos todos los detalles específicos.",
+        "Q: ¿Qué días es el refuerzo escolar?\nA: Lunes, martes, miércoles, jueves y viernes de 15:30 a 16:30.",
+        "Q: ¿Qué días es el refuerzo escolar?\nA: Lunes, martes, miércoles, jueves y viernes de 15:30 a 16:30."
+      ],
+      "2": [
+        "Q: ¿Dónde está la residencia?\nA: La residencia está en la calle Crevillente 22, muy cerca de la Avenida Blasco Ibáñez, en Valencia.",
+        "Q: ¿Dónde está la residencia La Acollida?\nA: En la residencia La Acollida, muy cerca de Blasco Ibáñez en la calle Crevillente 22.",
+        "Q: ¿Cómo se llama la residencia?\nA: La residencia se llama La Acollida (también conocida como L'Acollida).",
+        "Q: ¿Cuándo se va a la residencia?\nA: Todos los miércoles de 5:30 a 6:30 de la tarde (17:30-18:30h).",
+        "Q: ¿Dónde es el voluntariado en residencias?\nA: En la residencia La Acollida, muy cerca de Blasco Ibáñez en la calle Crevillente 22."
+      ],
+      "3": [
+        "Q: ¿Cómo puedo unirme a DNI?\nA: ¡Es muy fácil! Simplemente contacta con nosotros por WhatsApp al 962 025 978 o al 647 440 275 y te añadiremos a nuestros grupos de coordinación. No hay formularios complicados ni burocracia. También puedes seguirnos en Instagram @dnivalenciaa donde publicamos todas las actividades. Te unes, te presentas en la primera actividad que te interese, ¡y ya eres parte de DNI!",
+        "Q: ¿Por qué debería unirme a DNI?\nA: Unirte a DNI te cambia la vida en múltiples niveles: 1) Impacto real - verás directamente cómo tu ayuda mejora la vida de personas sin hogar, ancianos solos, niños en dificultades, 2) Comunidad - harás amigos con tus mismos valores, gente increíble de 18-25 años, 3) Crecimiento personal - desarrollarás empatía, liderazgo, trabajo en equipo, 4) Propósito - sentirás que tu tiempo importa y genera cambio positivo, 5) Diversión - ¡el voluntariado con DNI es alegre, dinámico y lleno de buenas vibras! Ven a una actividad y lo experimentarás. 💙",
+        "Q: ¿Qué pasa si no puedo ir un día?\nA: No pasa nada, siempre que avises con tiempo. Se entiende que la vida de los jóvenes es ajetreada.",
+        "Q: ¿Alguna vez puedo ir a hacer una prueba?\nA: Claro, no hay ningún problema, contacta con el responsable de la asociación.",
+        "Q: ¿Qué hago si me he apuntado pero al final no puedo ir?\nA: No pasa nada, pero avísanos por el grupo de WhatsApp lo antes posible para ajustar la organización."
+      ],
+      "4": [
+        "Q: ¿Qué significa el nombre \"Damos Nuestra Ilusión\"?\nA: Representa la idea de compartir no solo alimentos, sino también esperanza, alegría y motivación.",
+        "Q: ¿Hay algún lema o frase que identifique al grupo?\nA: Sí: \"Contagiamos ilusión, compartimos esperanza\".",
+        "Q: ¿Cómo se llama la residencia?\nA: La residencia se llama La Acollida (también conocida como L'Acollida).",
+        "¿POR QUÉ DNI?\n\nLa pregunta correcta no es qué es DNI, sino por qué DNI. ¿Qué es lo que ha sucedido para que aparezca? ¿Qué intenta conseguir? ¿A quién pretende llegar?",
+        "Q: ¿Hay formación previa antes de participar?\nA: Sí, el staff te explica antes de salir cómo actuar, qué decir y cómo mantener una actitud respetuosa."
+      ]
+    },
+    "ground_truth": {
+      "0": "El punto de encuentro es la Porta de la Mar de Valencia.",
+      "1": "El refuerzo escolar es de lunes a viernes de 15:30 a 16:30.",
+      "2": "La residencia La Acollida está en la calle Crevillente 22 de Valencia.",
+      "3": "Puedes contactar por WhatsApp y te añadirán a los grupos.",
+      "4": "Es la filosofía principal de DNI basada en empatía y acción social."
+    },
+    "faithfulness": {
+      "0": null,
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null
+    },
+    "answer_relevancy": {
+      "0": null,
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null
+    },
+    "context_precision": {
+      "0": null,
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null
+    },
+    "context_recall": {
+      "0": null,
+      "1": null,
+      "2": null,
+      "3": null,
+      "4": null
+    }
+  },
+  "metricas_propias": [
+    {
+      "question": "¿Dónde es el punto de encuentro para desayunos?",
+      "source_citation_accuracy": 1.0,
+      "contradiction_handling_score": 0.0
+    },
+    {
+      "question": "¿Qué días es el refuerzo escolar?",
+      "source_citation_accuracy": 1.0,
+      "contradiction_handling_score": 0.0
+    },
+    {
+      "question": "¿Dónde está la residencia La Acollida?",
+      "source_citation_accuracy": 1.0,
+      "contradiction_handling_score": 0.0
+    },
+    {
+      "question": "¿Cómo puedo unirme a DNI?",
+      "source_citation_accuracy": 1.0,
+      "contradiction_handling_score": 0.5
+    },
+    {
+      "question": "¿Qué significa PARA. MIRA. AYUDA?",
+      "source_citation_accuracy": 1.0,
+      "contradiction_handling_score": 0.0
+    }
+  ]
+}

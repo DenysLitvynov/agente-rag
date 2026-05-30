@@ -111,3 +111,24 @@ agente-rag/
 | `CHROMA_PATH` | Directorio de ChromaDB | `data/chroma` |
 | `POLIGPT_API_KEY` | API key de PoliGPT (UPV) | — |
 | `POLIGPT_BASE_URL` | URL base de PoliGPT | `https://api.poligpt.upv.es/v1` |
+
+## Evaluación RAGAs (Banda 8)
+
+Instalar dependencias (funciona bien con Python 3.11):
+
+```bash
+pip install ragas datasets langchain langchain-community langchain-openai
+```
+
+Ejecutar evaluación:
+
+```bash
+python evaluacion/evaluar_ragas.py
+```
+
+Los resultados se guardan en:
+
+```text
+evaluacion/ragas_results.json
+
+```

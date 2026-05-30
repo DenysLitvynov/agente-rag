@@ -8,7 +8,7 @@
     "banda5_pipeline_no_inventa": true,
     "banda6_cita_archivo": true,
     "banda7_benchmark_4_modelos": true,
-    "banda8_ragas_metricas_propias": false,
+    "banda8_ragas_metricas_propias": true,
     "banda10_hexagonal": false
   },
   "extras_declarados": {
@@ -17,10 +17,22 @@
     "huggingface": false
   },
   "modelos_evaluados_en_benchmark": [
-    {"alias": "qwen2.5:3b",   "servidor": "ollama_local"},
-    {"alias": "llama3.2:3b",  "servidor": "ollama_local"},
-    {"alias": "gemma3:27b",   "servidor": "poligpt"},
-    {"alias": "llama3.3:70b", "servidor": "poligpt"}
+    {
+      "alias": "qwen2.5:3b",
+      "servidor": "ollama_local"
+    },
+    {
+      "alias": "llama3.2:3b",
+      "servidor": "ollama_local"
+    },
+    {
+      "alias": "gemma3:27b",
+      "servidor": "poligpt"
+    },
+    {
+      "alias": "llama3.3:70b",
+      "servidor": "poligpt"
+    }
   ],
   "ollama_local_obligatorio": true,
   "verify_ssl_upv": false
