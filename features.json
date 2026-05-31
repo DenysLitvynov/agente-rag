@@ -12,8 +12,8 @@
     "banda10_hexagonal": false
   },
   "extras_declarados": {
-    "frontend": false,
-    "aws_rekognition": false,
+    "frontend":true,
+    "aws_rekognition": true,
     "huggingface": false
   },
   "modelos_evaluados_en_benchmark": [

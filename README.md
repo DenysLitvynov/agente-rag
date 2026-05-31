@@ -74,9 +74,12 @@ Ejecuta 12 preguntas contra 4 modelos (2 locales + 2 PoliGPT). Requiere VPN UPV 
 
 ## Estructura del proyecto
 
+## Estructura del proyecto
+
 ```
 agente-rag/
 ├── consultar.py              # Punto de entrada del contrato (opción A)
+├── verificar_imagen.py       # Extra Rekognition: CLI (foto → verificación)
 ├── corpus/                   # 16 documentos .txt de DNI (no modificar)
 ├── src/agente_rag/
 │   ├── pipeline.py           # Orquestador: retrieve → prompt → generate
@@ -85,7 +88,12 @@ agente-rag/
 │   ├── retriever.py          # ChromaDB: indexación y búsqueda semántica
 │   ├── generator.py          # Cliente LLM (Ollama / PoliGPT)
 │   ├── prompts.py            # Prompt anti-alucinación
+│   ├── rekognition.py        # Extra: OCR (AWS Rekognition) + verificación
 │   └── config.py             # Configuración desde .env
+├── frontend/
+│   └── app.py                # Extra: interfaz web Streamlit (chat + verificar imagen)
+├── .streamlit/
+│   └── config.toml           # Tema visual del frontend
 ├── scripts/
 │   └── build_index.py        # Construcción del índice vectorial
 ├── benchmark/
@@ -93,7 +101,13 @@ agente-rag/
 │   ├── benchmark.py          # Script del benchmark
 │   ├── benchmark.json        # Resultados crudos
 │   └── benchmark.md          # Tabla legible + interpretación
-├── features.json             # Declaración de bandas implementadas
+├── evaluacion/               # Banda 8: RAGAs + métricas propias
+│   ├── evaluar_ragas.py
+│   ├── ground_truth.json
+│   ├── metricas_propias.py
+│   ├── metricas_propias.md
+│   └── ragas_results.json
+├── features.json             # Declaración de bandas y extras implementados
 ├── .env.example              # Plantilla de variables de entorno
 ├── GRUPO.md                  # Integrantes y roles
 └── AI_USAGE.md               # Uso honesto de herramientas IA
@@ -143,9 +157,54 @@ python evaluacion/evaluar_ragas.py
 
 ### Ficheros Generados
 
-| Fichero | Contenido |
-|---------|-----------|
-| `evaluacion/ragas_results.json` | Resultados numéricos de las 4 métricas RAGAs (*Faithfulness*, *Answer Relevancy*, *Context Precision*, *Context Recall*) + métricas propias, desglosados por pregunta |
-| `evaluacion/metricas_propias.md` | Definición, justificación y valores de las 2 métricas propias (*Source Citation Accuracy* y *Contradiction Handling Score*) |
-| `evaluacion/ground_truth.json` | Dataset de 5 preguntas con respuestas de referencia redactadas manualmente |
-| `benchmark.md` | Tabla global con todos los resultados RAGAs y métricas propias integrados + interpretación |
+```
+
+Interfaz web ligera que **consume el contrato del agente**: importa la función
+`consultar()` de `consultar.py` (opción A) y se limita a presentar el resultado,
+sin reimplementar nada del dominio. Por cada pregunta muestra la respuesta, las
+**fuentes citadas** (banda 6), los **chunks recuperados con su score** (banda 7)
+y las **métricas** de generación (latencia, tokens/s, modelo).
+
+### Requisitos
+
+- Dependencias del proyecto instaladas (`pip install -r requirements.txt`);
+  `streamlit` ya está incluido.
+- Ollama en marcha y el índice construido (`python scripts/build_index.py`),
+  exactamente igual que para usar `consultar.py`.
+
+### Cómo lanzarlo
+
+Desde la **raíz del repositorio**:
+
+```bash
+streamlit run frontend/app.py
+```
+
+Se abre solo en el navegador (`http://localhost:8501`). La primera respuesta
+tarda más porque el modelo se carga en memoria; en CPU la generación va a la
+velocidad esperable de un modelo local.
+
+### Qué incluye
+
+- Chat con historial de la sesión y preguntas de ejemplo (incluida una fuera de
+  ámbito, para ver que el agente la rechaza).
+- Respuesta + fuentes citadas + desplegable con los chunks recuperados y sus
+  scores + métricas de generación.
+- Barra lateral con la configuración activa (modelo LLM, embeddings, colección).
+- Tema visual definido en `.streamlit/config.toml`.
+
+### Verificación de imágenes con AWS Rekognition
+
+Sube una foto (un cartel, un horario impreso, un post) y el agente extrae el
+texto con **AWS Rekognition** (OCR) y comprueba si coincide con la información
+oficial del corpus (COINCIDE / CONTRADICE / SIN INFORMACIÓN), citando fuentes.
+
+Requiere `boto3` (ya en `requirements.txt`) y credenciales de AWS en el `.env`
+(`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`).
+
+- **Desde el frontend:** modo "Verificar imagen" → subir foto → "Verificar contra el corpus".
+- **Desde la terminal:**
+
+```bash
+python verificar_imagen.py ruta/a/la/imagen.jpg
+```

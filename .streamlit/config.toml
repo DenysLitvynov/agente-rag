@@ -1,0 +1,11 @@
+# Tema del Asistente DNI. Streamlit lee este fichero desde la raíz del proyecto.
+[theme]
+base = "light"
+primaryColor = "#e2603a"
+backgroundColor = "#fbf6ee"
+secondaryBackgroundColor = "#f3ebdd"
+textColor = "#2a2421"
+font = "sans serif"
+
+[server]
+headless = false
