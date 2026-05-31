@@ -3,5 +3,5 @@
 | Nombre completo | Rol en el proyecto |
 |-----------------|-------------------|
 | Denys Litvynov Lymanets | Pipeline RAG completo: chunker Q/A, embedder, ChromaDB persistente, prompt anti-alucinación, configuración del entorno, benchmark de 4 modelos |
-| Alan Guevara Martinez | Evaluación Banda 8: integración de RAGAs, creación del dataset de ground truth, definición de métricas propias, generación de resultados y documentación de la evaluación |
+| Alan Guevara Martinez | Integración y ejecución de la evaluación Banda 8 (RAGAs), generación de métricas propias, validación de resultados y documentación |
 | Juan Bautista Peris Fontestad | [Completar] |

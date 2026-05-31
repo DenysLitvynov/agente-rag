@@ -112,23 +112,40 @@ agente-rag/
 | `POLIGPT_API_KEY` | API key de PoliGPT (UPV) | — |
 | `POLIGPT_BASE_URL` | URL base de PoliGPT | `https://api.poligpt.upv.es/v1` |
 
-## Evaluación RAGAs (Banda 8)
+## Evaluación RAGAs y Métricas Propias (Banda 8)
 
-Instalar dependencias (funciona bien con Python 3.11):
+El proyecto incluye un pipeline completo para la evaluación cuantitativa y cualitativa del sistema RAG utilizando el framework **RAGAs** junto con métricas personalizadas de robustez y precisión de atribución.
+
+### Prerrequisitos
+
+Antes de ejecutar la evaluación, asegúrate de haber completado todos los pasos de la sección **Instalación**:
+
+1. Entorno virtual activado (`.venv`)
+2. Dependencias base instaladas (`pip install -r requirements.txt` — ya incluye `ragas` y `datasets`)
+3. Fichero `.env` configurado (copiado desde `.env.example`)
+4. Modelos de Ollama descargados (`ollama pull nomic-embed-text` y `ollama pull qwen2.5:3b`)
+5. Índice vectorial construido (`python scripts/build_index.py`)
+
+Además, instala los paquetes adicionales de LangChain necesarios para que RAGAs use Ollama como juez local:
 
 ```bash
-pip install ragas datasets langchain langchain-community langchain-openai
+pip install langchain langchain-community langchain-openai
 ```
 
-Ejecutar evaluación:
+### Ejecutar la Evaluación
 
 ```bash
 python evaluacion/evaluar_ragas.py
 ```
 
-Los resultados se guardan en:
+> [!IMPORTANT]
+> **Nota sobre el rendimiento local:** El script está configurado para ejecutarse en modo secuencial (`max_workers=1`) y con un timeout alto (`timeout=1000`). Esto garantiza que Ollama (ejecutándose en CPU) procese las consultas una por una sin provocar timeouts ni valores nulos. El proceso completo tarda aproximadamente **1 hora y 45 minutos** en CPU.
 
-```text
-evaluacion/ragas_results.json
+### Ficheros Generados
 
-```
+| Fichero | Contenido |
+|---------|-----------|
+| `evaluacion/ragas_results.json` | Resultados numéricos de las 4 métricas RAGAs (*Faithfulness*, *Answer Relevancy*, *Context Precision*, *Context Recall*) + métricas propias, desglosados por pregunta |
+| `evaluacion/metricas_propias.md` | Definición, justificación y valores de las 2 métricas propias (*Source Citation Accuracy* y *Contradiction Handling Score*) |
+| `evaluacion/ground_truth.json` | Dataset de 5 preguntas con respuestas de referencia redactadas manualmente |
+| `benchmark.md` | Tabla global con todos los resultados RAGAs y métricas propias integrados + interpretación |
