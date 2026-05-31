@@ -1,19 +1,15 @@
-"""Frontend Streamlit del Asistente DNI (extra: frontend, +1.5).
+"""Frontend Streamlit del Asistente DNI (extras: frontend + AWS Rekognition).
 
-Este frontend NO reimplementa nada del dominio: importa la función del contrato
-oficial ``consultar()`` (enunciado §9, opción A) desde la raíz del repositorio
-—la misma que llama el corrector— y se limita a presentar el resultado:
+Dos modos, seleccionables en la barra lateral:
+  - Preguntar: chat que consume el contrato oficial ``consultar()``.
+  - Verificar imagen: sube una foto (un cartel, un horario) y el agente comprueba,
+    vía Rekognition (OCR) + el corpus, si su contenido coincide con la
+    información oficial de DNI.
 
-    - la respuesta del agente,
-    - las FUENTES citadas (banda 6),
-    - los CHUNKS recuperados con su score (banda 7),
-    - las MÉTRICAS de generación (latencia, tokens/s, modelo).
+El frontend no reimplementa nada del dominio: importa ``consultar()`` y el módulo
+``rekognition`` y se limita a presentar los resultados.
 
-Así queda claro que el agente está realmente conectado y que el frontend es
-funcional, no cosmético.
-
-Lanzar SIEMPRE desde la raíz del repositorio:
-
+Lanzar desde la raíz del repositorio:
     streamlit run frontend/app.py
 """
 
@@ -26,14 +22,10 @@ from pathlib import Path
 
 import streamlit as st
 
-# --- Hacemos importable la raíz del repo (donde vive consultar.py) ----------
-# El frontend está en frontend/, así que subimos un nivel para alcanzar la raíz.
 ROOT = Path(__file__).resolve().parent.parent
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))
 
-# consultar.py ya añade src/ al path al importarse, así que después de esta
-# línea el paquete agente_rag también es importable.
 from consultar import consultar  # noqa: E402  (contrato oficial)
 from agente_rag.config import SETTINGS  # noqa: E402  (solo para mostrar config)
 
@@ -93,8 +85,8 @@ st.markdown(
     <div class="dni-header">
       <div class="dni-lema">PARA · MIRA · AYUDA</div>
       <h1>Asistente DNI</h1>
-      <p class="dni-sub">Pregúntame sobre la asociación <strong>Damos Nuestra Ilusión</strong> (Valencia).
-      Respondo únicamente con la información de los documentos oficiales y te cito las fuentes.</p>
+      <p class="dni-sub">Pregúntame sobre la asociación <strong>Damos Nuestra Ilusión</strong> (Valencia),
+      o verifica una imagen contra la información oficial. Cito siempre las fuentes.</p>
     </div>
     """,
     unsafe_allow_html=True,
@@ -103,7 +95,7 @@ st.markdown(
 
 # ------------------------------- Estado de sesión ---------------------------
 if "messages" not in st.session_state:
-    st.session_state.messages = []  # [{role, content?|result?}]
+    st.session_state.messages = []
 if "conv_id" not in st.session_state:
     st.session_state.conv_id = str(uuid.uuid4())
 if "pending" not in st.session_state:
@@ -111,128 +103,182 @@ if "pending" not in st.session_state:
 
 
 # ------------------------------- Utilidades ---------------------------------
-def _friendly_error(exc: Exception) -> str:
-    """Traduce los fallos típicos a un mensaje accionable para el usuario."""
+def _friendly_error(exc) -> str:
     s = str(exc).lower()
-    if any(t in s for t in ("connection", "max retries", "refused", "connectionerror")):
-        return (
-            "No consigo conectar con Ollama. Comprueba que está en marcha "
-            "(`ollama serve`) y vuelve a intentarlo."
-        )
+    if any(t in s for t in ("connection", "max retries", "refused")):
+        return "No consigo conectar con Ollama. Comprueba que está en marcha (`ollama serve`)."
     if "404" in s and "generate" in s:
-        return (
-            "Ollama responde pero no encuentra el modelo. Revisa `LLM_MODEL` en tu "
-            "`.env` y que esté descargado (`ollama list`)."
-        )
+        return "Ollama responde pero no encuentra el modelo. Revisa `LLM_MODEL` en tu `.env` y `ollama list`."
     if any(t in s for t in ("collection", "does not exist", "get_collection")):
-        return (
-            "No encuentro el índice vectorial. Ejecuta primero "
-            "`python scripts/build_index.py` para construir la colección."
-        )
-    return f"Ha ocurrido un error al consultar el agente:\n\n```\n{exc}\n```"
+        return "No encuentro el índice vectorial. Ejecuta `python scripts/build_index.py`."
+    return f"Error al consultar el agente:\n\n```\n{exc}\n```"
 
 
-def render_answer(result: dict) -> None:
-    """Pinta una respuesta del agente: texto + fuentes + chunks + métricas."""
-    st.markdown(result.get("respuesta", ""))
+def _friendly_error_aws(exc) -> str:
+    s = str(exc).lower()
+    name = type(exc).__name__.lower()
+    if "nocredentials" in name or "unable to locate credentials" in s:
+        return "No encuentro las credenciales de AWS. Revisa `AWS_ACCESS_KEY_ID` y `AWS_SECRET_ACCESS_KEY` en tu `.env`."
+    if any(t in s for t in ("invalidclienttoken", "signaturedoesnotmatch", "invalidsignature", "unrecognizedclient")):
+        return "Las credenciales de AWS no son válidas. Revisa que la clave y el secret estén bien copiados en el `.env`."
+    if "accessdenied" in s:
+        return "Tu usuario de AWS no tiene permiso para Rekognition. Asígnale la política `AmazonRekognitionReadOnlyAccess`."
+    if isinstance(exc, ValueError):
+        return str(exc)
+    if "modulenotfound" in name or ("boto3" in s and "no module" in s):
+        return "Falta `boto3`. Instálalo con `pip install boto3`."
+    if any(t in s for t in ("endpoint", "could not connect", "region")):
+        return "Problema de conexión o región con AWS. Revisa `AWS_REGION` (usa `eu-west-1`) y tu conexión."
+    return f"Error al verificar la imagen:\n\n```\n{exc}\n```"
 
-    fuentes = result.get("fuentes") or []
+
+def render_chips(fuentes) -> None:
     if fuentes:
         chips = " ".join(f'<span class="chip">📄 {html.escape(str(f))}</span>' for f in fuentes)
         st.markdown(f'<div class="chips-row">{chips}</div>', unsafe_allow_html=True)
 
+
+def render_chunks_metrics(chunks, metricas) -> None:
     with st.expander("🔍 Ver chunks recuperados y métricas"):
-        chunks = result.get("chunks") or []
         if chunks:
             for c in chunks:
                 src = html.escape(str(c.get("source", "—")))
                 score = c.get("score", "—")
                 text = html.escape(str(c.get("text", "")))
                 st.markdown(
-                    f'<div class="chunk-card">'
-                    f'<div class="chunk-head">'
+                    f'<div class="chunk-card"><div class="chunk-head">'
                     f'<span class="chunk-src">{src}</span>'
-                    f'<span class="score-pill">score {score}</span>'
-                    f"</div>"
-                    f'<div class="chunk-text">{text}</div>'
-                    f"</div>",
+                    f'<span class="score-pill">score {score}</span></div>'
+                    f'<div class="chunk-text">{text}</div></div>',
                     unsafe_allow_html=True,
                 )
         else:
-            st.caption("No se recuperaron chunks para esta pregunta.")
-
-        m = result.get("metricas") or {}
-        if m:
+            st.caption("No se recuperaron chunks.")
+        if metricas:
             st.markdown("**Métricas de generación**")
             c1, c2, c3 = st.columns(3)
-            c1.metric("Latencia", f"{m.get('latencia_s', '?')} s")
-            c2.metric("Tokens/s", m.get("tokens_per_sec", "?"))
-            c3.metric("Modelo", m.get("modelo", "?"))
+            c1.metric("Latencia", f"{metricas.get('latencia_s', '?')} s")
+            c2.metric("Tokens/s", metricas.get("tokens_per_sec", "?"))
+            c3.metric("Modelo", metricas.get("modelo", "?"))
             st.caption(
-                f"Tokens de entrada: {m.get('prompt_tokens', '?')} · "
-                f"de salida: {m.get('output_tokens', '?')}"
+                f"Tokens de entrada: {metricas.get('prompt_tokens', '?')} · "
+                f"de salida: {metricas.get('output_tokens', '?')}"
             )
+
+
+def render_answer(result: dict) -> None:
+    st.markdown(result.get("respuesta", ""))
+    render_chips(result.get("fuentes") or [])
+    render_chunks_metrics(result.get("chunks") or [], result.get("metricas") or {})
+
+
+def render_verdict(veredicto: str) -> None:
+    up = veredicto.strip().upper()
+    if up.startswith("COINCIDE"):
+        st.success(veredicto)
+    elif up.startswith("CONTRADICE"):
+        st.error(veredicto)
+    elif up.startswith("SIN INFORMACI"):
+        st.warning(veredicto)
+    else:
+        st.info(veredicto)
+
+
+EJEMPLOS = [
+    "¿Qué es DNI?",
+    "¿Cómo me apunto a los desayunos solidarios?",
+    "¿En qué se diferencian RESIS y COLES?",
+    "¿Cuánto cuesta el alquiler en Valencia?",
+]
 
 
 # ------------------------------- Barra lateral ------------------------------
 with st.sidebar:
+    st.markdown("### Modo")
+    modo = st.radio(
+        "Modo", ["💬 Preguntar", "🖼️ Verificar imagen"], label_visibility="collapsed"
+    )
+
+    st.divider()
     st.markdown("### ⚙️ Configuración activa")
-    st.caption("Lo que el agente está usando ahora mismo:")
     st.markdown(f"- **LLM:** `{SETTINGS.llm_model}`")
     st.markdown(f"- **Embeddings:** `{SETTINGS.embed_model}`")
     st.markdown(f"- **Colección:** `{SETTINGS.collection_name}`")
     st.markdown(f"- **Ollama:** `{SETTINGS.ollama_url}`")
 
-    st.divider()
-    st.markdown("### 💡 Preguntas de ejemplo")
-    EJEMPLOS = [
-        "¿Qué es DNI?",
-        "¿Cómo me apunto a los desayunos solidarios?",
-        "¿En qué se diferencian RESIS y COLES?",
-        "¿Cuánto cuesta el alquiler en Valencia?",  # fuera de ámbito (debe rechazarla)
-    ]
-    for ej in EJEMPLOS:
-        if st.button(ej, use_container_width=True, key=f"ej_{ej}"):
-            st.session_state.pending = ej
-
-    st.divider()
-    if st.button("🗑️ Limpiar conversación", use_container_width=True):
-        st.session_state.messages = []
-        st.session_state.conv_id = str(uuid.uuid4())
-        st.rerun()
+    if modo == "💬 Preguntar":
+        st.divider()
+        st.markdown("### 💡 Preguntas de ejemplo")
+        for ej in EJEMPLOS:
+            if st.button(ej, use_container_width=True, key=f"ej_{ej}"):
+                st.session_state.pending = ej
+        st.divider()
+        if st.button("🗑️ Limpiar conversación", use_container_width=True):
+            st.session_state.messages = []
+            st.session_state.conv_id = str(uuid.uuid4())
+            st.rerun()
 
 
-# ------------------------------- Historial ----------------------------------
-for msg in st.session_state.messages:
-    avatar = "🧑" if msg["role"] == "user" else "🤝"
-    with st.chat_message(msg["role"], avatar=avatar):
-        if msg["role"] == "user":
-            st.markdown(msg["content"])
-        else:
-            render_answer(msg["result"])
+# ------------------------------- Modo: Preguntar ----------------------------
+if modo == "💬 Preguntar":
+    for msg in st.session_state.messages:
+        avatar = "🧑" if msg["role"] == "user" else "🤝"
+        with st.chat_message(msg["role"], avatar=avatar):
+            if msg["role"] == "user":
+                st.markdown(msg["content"])
+            else:
+                render_answer(msg["result"])
+
+    prompt = st.chat_input("Escribe tu pregunta sobre DNI…")
+    if st.session_state.pending and not prompt:
+        prompt = st.session_state.pending
+        st.session_state.pending = None
+
+    if prompt:
+        st.session_state.messages.append({"role": "user", "content": prompt})
+        with st.chat_message("user", avatar="🧑"):
+            st.markdown(prompt)
+        with st.chat_message("assistant", avatar="🤝"):
+            with st.spinner("Buscando en el corpus y generando la respuesta… (en CPU puede tardar)"):
+                try:
+                    result = consultar(prompt, conversation_id=st.session_state.conv_id)
+                    error = None
+                except Exception as exc:  # noqa: BLE001
+                    result, error = None, exc
+            if error is not None:
+                st.error(_friendly_error(error))
+            else:
+                render_answer(result)
+                st.session_state.messages.append({"role": "assistant", "result": result})
 
 
-# ------------------------------- Entrada ------------------------------------
-prompt = st.chat_input("Escribe tu pregunta sobre DNI…")
-if st.session_state.pending and not prompt:
-    prompt = st.session_state.pending
-    st.session_state.pending = None
+# --------------------------- Modo: Verificar imagen -------------------------
+else:
+    st.markdown("#### Verificar una imagen contra el corpus oficial")
+    st.caption(
+        "Sube una foto (un cartel, un horario impreso, un post…). El agente extrae el "
+        "texto con AWS Rekognition y comprueba si coincide con la información oficial de DNI."
+    )
+    uploaded = st.file_uploader("Imagen", type=["png", "jpg", "jpeg"])
 
-if prompt:
-    st.session_state.messages.append({"role": "user", "content": prompt})
-    with st.chat_message("user", avatar="🧑"):
-        st.markdown(prompt)
+    if uploaded is not None:
+        st.image(uploaded, width=380)
+        if st.button("Verificar contra el corpus", type="primary"):
+            with st.spinner("Leyendo la imagen (OCR) y verificando contra el corpus…"):
+                try:
+                    from agente_rag.rekognition import verificar_imagen
 
-    with st.chat_message("assistant", avatar="🤝"):
-        with st.spinner("Buscando en el corpus y generando la respuesta… (en CPU puede tardar)"):
-            try:
-                result = consultar(prompt, conversation_id=st.session_state.conv_id)
-                error = None
-            except Exception as exc:  # noqa: BLE001  (queremos mostrar cualquier fallo)
-                result, error = None, exc
+                    result = verificar_imagen(uploaded.getvalue())
+                    error = None
+                except Exception as exc:  # noqa: BLE001
+                    result, error = None, exc
 
-        if error is not None:
-            st.error(_friendly_error(error))
-        else:
-            render_answer(result)
-            st.session_state.messages.append({"role": "assistant", "result": result})
+            if error is not None:
+                st.error(_friendly_error_aws(error))
+            else:
+                st.markdown("**Texto detectado en la imagen:**")
+                st.code(result["texto_imagen"] or "(no se detectó texto)")
+                st.markdown("**Veredicto del agente:**")
+                render_verdict(result["veredicto"])
+                render_chips(result.get("fuentes") or [])
+                render_chunks_metrics(result.get("chunks") or [], result.get("metricas") or {})

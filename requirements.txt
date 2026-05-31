@@ -9,3 +9,5 @@ pytest>=8.0
 ragas==0.1.21
 datasets
 streamlit>=1.36
+
+boto3>=1.34

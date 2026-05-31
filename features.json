@@ -13,7 +13,7 @@
   },
   "extras_declarados": {
     "frontend":true,
-    "aws_rekognition": false,
+    "aws_rekognition": true,
     "huggingface": false
   },
   "modelos_evaluados_en_benchmark": [

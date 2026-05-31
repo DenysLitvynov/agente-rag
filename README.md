@@ -74,9 +74,12 @@ Ejecuta 12 preguntas contra 4 modelos (2 locales + 2 PoliGPT). Requiere VPN UPV 
 
 ## Estructura del proyecto
 
+## Estructura del proyecto
+
 ```
 agente-rag/
 ├── consultar.py              # Punto de entrada del contrato (opción A)
+├── verificar_imagen.py       # Extra Rekognition: CLI (foto → verificación)
 ├── corpus/                   # 16 documentos .txt de DNI (no modificar)
 ├── src/agente_rag/
 │   ├── pipeline.py           # Orquestador: retrieve → prompt → generate
@@ -85,7 +88,12 @@ agente-rag/
 │   ├── retriever.py          # ChromaDB: indexación y búsqueda semántica
 │   ├── generator.py          # Cliente LLM (Ollama / PoliGPT)
 │   ├── prompts.py            # Prompt anti-alucinación
+│   ├── rekognition.py        # Extra: OCR (AWS Rekognition) + verificación
 │   └── config.py             # Configuración desde .env
+├── frontend/
+│   └── app.py                # Extra: interfaz web Streamlit (chat + verificar imagen)
+├── .streamlit/
+│   └── config.toml           # Tema visual del frontend
 ├── scripts/
 │   └── build_index.py        # Construcción del índice vectorial
 ├── benchmark/
@@ -93,7 +101,13 @@ agente-rag/
 │   ├── benchmark.py          # Script del benchmark
 │   ├── benchmark.json        # Resultados crudos
 │   └── benchmark.md          # Tabla legible + interpretación
-├── features.json             # Declaración de bandas implementadas
+├── evaluacion/               # Banda 8: RAGAs + métricas propias
+│   ├── evaluar_ragas.py
+│   ├── ground_truth.json
+│   ├── metricas_propias.py
+│   ├── metricas_propias.md
+│   └── ragas_results.json
+├── features.json             # Declaración de bandas y extras implementados
 ├── .env.example              # Plantilla de variables de entorno
 ├── GRUPO.md                  # Integrantes y roles
 └── AI_USAGE.md               # Uso honesto de herramientas IA
@@ -168,12 +182,18 @@ velocidad esperable de un modelo local.
 - Barra lateral con la configuración activa (modelo LLM, embeddings, colección).
 - Tema visual definido en `.streamlit/config.toml`.
 
-### Estructura
+### Verificación de imágenes con AWS Rekognition
 
-```
-frontend/
-└── app.py          # UI Streamlit (importa consultar())
-.streamlit/
-└── config.toml     # tema visual (colores y tipografía)
-```
+Sube una foto (un cartel, un horario impreso, un post) y el agente extrae el
+texto con **AWS Rekognition** (OCR) y comprueba si coincide con la información
+oficial del corpus (COINCIDE / CONTRADICE / SIN INFORMACIÓN), citando fuentes.
 
+Requiere `boto3` (ya en `requirements.txt`) y credenciales de AWS en el `.env`
+(`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, `AWS_REGION`).
+
+- **Desde el frontend:** modo "Verificar imagen" → subir foto → "Verificar contra el corpus".
+- **Desde la terminal:**
+
+```bash
+python verificar_imagen.py ruta/a/la/imagen.jpg
+```
